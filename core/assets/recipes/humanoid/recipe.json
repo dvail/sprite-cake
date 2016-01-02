@@ -1,0 +1,33 @@
+{
+  "animations": [
+    {
+      "direction": "side",
+      "name": "melee-slash",
+      "frames":[ [
+        {"img" : "side/background-0.png", "offset-x": 0, "offset-y": 0 },
+        {"img" : "side/melee-slash/body-0.png", "offset-x": 0, "offset-y": 0 },
+        {"img" : "side/head-0.png", "offset-x": 0, "offset-y": 0 },
+        {"img" : "side/foreground-0.png", "offset-x": 0, "offset-y": 0 }
+      ],[
+      {"img" : "side/background-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/melee-slash/body-1.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/head-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/foreground-0.png", "offset-x": 0, "offset-y": 0 }
+      ],[
+      {"img" : "side/background-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/melee-slash/body-2.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/head-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/foreground-0.png", "offset-x": 0, "offset-y": 0 }
+      ],[
+      {"img" : "side/background-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/melee-slash/body-3.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/head-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/foreground-0.png", "offset-x": 0, "offset-y": 0 }
+      ],[
+      {"img" : "side/background-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/melee-slash/body-4.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/head-0.png", "offset-x": 0, "offset-y": 0 },
+      {"img" : "side/foreground-0.png", "offset-x": 0, "offset-y": 0 }
+      ]]
+    }
+  ]}
