@@ -1,0 +1,38 @@
+# Images stacks should be set up in the following order:
+#
+# Side/Front:   Background, Base, Feet, Legs, Body, Hands, Weapon, Hair*, Head, Foreground
+# Back:         Foreground, Weapon, Base, Hands, Feet, Legs, Body, Hair*, Head, Background
+#
+# If a piece of eq is missing, not equiped, or not renderable it will not be added to the stack.
+#
+# Background/foreground pieces are placeholders for possible character extras, wings, etc.
+
+# Example recipe for a body eq piece
+[side.standing]
+frames = []
+
+[side.walking]
+frames = []
+
+[side.dead]
+frames = []
+
+[side.melee-slash]
+frames = [
+    {img = 'side/melee-slash/body-0.png', offset-x = 0, offset-y = 0},
+    {img = 'side/melee-slash/body-1.png', offset-x = 0, offset-y = 0},
+    {img = 'side/melee-slash/body-2.png', offset-x = 0, offset-y = 0},
+    {img = 'side/melee-slash/body-3.png', offset-x = 0, offset-y = 0},
+    {img = 'side/melee-slash/body-4.png', offset-x = 0, offset-y = 0},
+]
+
+[side.melee-bash]
+frames = []
+
+[side.melee-pierce]
+frames = []
+
+[side.melee-h2h]
+frames = []
+
+

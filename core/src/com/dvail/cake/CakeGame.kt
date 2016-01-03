@@ -8,15 +8,56 @@ import com.badlogic.gdx.tools.texturepacker.TexturePacker
 import com.moandjiezana.toml.Toml
 import java.awt.image.BufferedImage
 import java.io.File
+import java.util.*
 import javax.imageio.ImageIO
 
+enum class SpriteSlice {
+    Background, Foreground, Body, Hair,
+    EqBody, EqHead, EqFeet, EqLegs, EqHands, EqWeapon
+}
+
+enum class SpriteDirection {
+    side, front, back
+}
+
+
 class CakeGame : Game() {
-    val inputDir = "./recipes/humanoid/"
+    val baseDir = "./recipes/humanoid/"
     val outputDir = "/tmp/sprite/"
+
+    val SLICE_ORDER = HashMap<SpriteDirection, Array<SpriteSlice>>()
+
+    // TODO Pull this out into a top level animation config
+    val ANIMATIONS = arrayOf(
+            Pair("melee-slash", 5)
+    )
+
+    init {
+        val frontOrder = arrayOf(
+                SpriteSlice.EqWeapon, SpriteSlice.Body, SpriteSlice.EqHands, SpriteSlice.EqFeet,
+                SpriteSlice.EqLegs, SpriteSlice.EqBody, SpriteSlice.Hair, SpriteSlice.EqHead)
+
+        val backOrder = arrayOf(
+                SpriteSlice.Body, SpriteSlice.EqFeet, SpriteSlice.EqLegs, SpriteSlice.EqBody,
+                SpriteSlice.EqHands, SpriteSlice.EqWeapon, SpriteSlice.Hair, SpriteSlice.EqHead)
+
+        SLICE_ORDER.put(SpriteDirection.side, frontOrder)
+        SLICE_ORDER.put(SpriteDirection.front, frontOrder)
+        SLICE_ORDER.put(SpriteDirection.back, backOrder)
+    }
 
     override fun create() {
         setScreen(TestScreen)
-        createTest()
+
+        val slices = hashMapOf(
+                Pair(SpriteSlice.Body, "body/male-default/"),
+                Pair(SpriteSlice.Hair, "hair/plain-mop/"),
+                Pair(SpriteSlice.EqFeet, "eqfeet/cloth-shoes/"),
+                Pair(SpriteSlice.EqLegs, "eqlegs/cloth-pants/"),
+                Pair(SpriteSlice.EqBody, "eqbody/cloth-armor/")
+        )
+
+        createTest(slices)
     }
 
     override fun render() {
@@ -24,46 +65,69 @@ class CakeGame : Game() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
     }
 
-    private fun createTest() {
-        File(outputDir).mkdirs()
-        buildSprites()
-        packSprites("humanoid")
+    private fun createTest(slices: HashMap<SpriteSlice, String>) {
+        // TODO iterate directions here
+        buildSprites(slices, SpriteDirection.side)
+        // packSprites("humanoid")
     }
 
-    private fun buildSprites() {
-        val recipe = Toml().read(File("${inputDir}recipe.toml"))
-        recipe.getTables("animations").forEach { buildFrames(it) }
+    private fun buildSprites(slices: HashMap<SpriteSlice, String>, direction: SpriteDirection) {
+        val ordering = SLICE_ORDER[direction]
+        val sliceConfigs = ArrayList<Pair<String, Toml>>(slices.size)
+
+        ordering?.forEach { slice ->
+            val slicePath = slices[slice]
+            val recipe = File("$baseDir${slicePath}recipe.toml")
+
+            if (slicePath != null && recipe.exists()) {
+                sliceConfigs.add(Pair(slicePath, Toml().read(recipe)))
+            }
+        }
+
+        ANIMATIONS.forEach {
+            buildFrames(sliceConfigs, direction, it)
+        }
+
     }
 
-    private fun buildFrames(animation: Toml) {
-        val direction = animation.getString("direction")
-        val name = animation.getString("name")
-        val frames = animation.getTables("frames")
 
-        frames.forEachIndexed { index, frames ->
-            val frame = combineFrames(frames.getTables("stack"))
-            val file = File("$outputDir$direction-$name-$index.png")
-            ImageIO.write(frame, "png", file)
+    // TODO This isnt working, looks like it is overwriting the file for each layer
+    private fun buildFrames(recipes: List<Pair<String, Toml>>, direction: SpriteDirection, animConf: Pair<String, Int>) {
+        for (i in 0..animConf.second - 1) {
+
+            val outFile = File("$outputDir$direction-${animConf.first}-$i.png")
+            outFile.mkdirs()
+
+            var combined: BufferedImage? = null
+
+            recipes.forEach { recipe ->
+                val animation = recipe.second.getTable(direction.name)?.getTable(animConf.first)
+                val frames = animation?.getTables("frames")
+
+                if (frames == null || frames.size != animConf.second) {
+                    println("Frame count invalid")
+                } else {
+
+                    val frameImages = frames.map {
+                        val file = File("$baseDir${recipe.first}${it.getString("img")}")
+                        ImageIO.read(file)
+                    }
+
+                    val height = frameImages.first().height
+                    val width = frameImages.first().width
+                    if (combined == null) {
+                        combined = BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB)
+                    }
+                    val graphics = combined?.graphics
+
+                    graphics?.drawImage(frameImages[i], frames[i].getLong("offset-x").toInt(), frames[i].getLong("offset-y").toInt(), null)
+
+                }
+            }
+
+            ImageIO.write(combined, "png", outFile)
         }
-    }
 
-    private fun combineFrames(frameStack: List<Toml>) : BufferedImage {
-       val frames = frameStack.map { it ->
-            val file = File("$inputDir${it.getString("img")}")
-            ImageIO.read(file)
-        }
-        val height = frames.first().height
-        val width = frames.first().width
-        val combined = BufferedImage(height, width, BufferedImage.TYPE_INT_ARGB)
-        val graphics = combined.graphics
-
-        frameStack.zip(frames).forEach { pair ->
-            val toml = pair.first
-            graphics.drawImage(pair.second, toml.getLong("offset-x").toInt(), toml.getLong("offset-y").toInt(), null)
-        }
-        graphics.dispose()
-
-        return combined
     }
 
     private fun packSprites(packName: String) {
